@@ -1,0 +1,4 @@
+displayName = Global Trinkets
+homepage = https://forums.terraria.org/index.php?threads/cellphone-is-wormhole.79685/
+author = SheepishShepherd
+version = 0.3
