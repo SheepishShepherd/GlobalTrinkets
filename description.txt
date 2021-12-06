@@ -1,4 +1,4 @@
-Allows informational accessories, some construction/wiring accessories, and the discount card to work while in your piggy bank, safe, or defenders forge. Items include:
+Allows informational accessories, some construction/wiring accessories, and the discount card to work while in your piggy bank, safe, defenders forge, or void bag. Items include:
 
 [i:854] Discount Card
 [i:17] Watches
@@ -14,7 +14,6 @@ Allows informational accessories, some construction/wiring accessories, and the 
 [i:3037] Weather Radio
 [i:3096] Sextant
 [i:3619] Mechanical Lens
-[i:486] Ruler
 [i:2799] Mechanical Ruler
 [i:3624] Presserator
 [i:2216] Paint Sprayer

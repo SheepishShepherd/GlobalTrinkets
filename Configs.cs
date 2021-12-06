@@ -6,7 +6,7 @@ using Terraria.ModLoader.Config;
 namespace GlobalTrinkets
 {
 	[Label("Limitations")]
-	public class GT_Configs : ModConfig
+	public class GTConfigs : ModConfig
 	{
 		public override ConfigScope Mode => ConfigScope.ServerSide;
 		

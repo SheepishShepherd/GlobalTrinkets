@@ -1,2 +1,11 @@
-bin\
-.vs\
+################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/GlobalTrinkets
+/obj
+/Properties
+*.sln
+*.mdp
+workshop.json
+/bin/Debug/net45
