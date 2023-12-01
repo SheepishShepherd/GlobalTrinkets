@@ -2,10 +2,11 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs/GlobalTrinkets
+/.vs
 /obj
 /Properties
 *.sln
 *.mdp
 workshop.json
 /bin/Debug/
+.editorconfig

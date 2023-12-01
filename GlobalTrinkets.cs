@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -6,83 +7,119 @@ namespace GlobalTrinkets
 {
 	public class GlobalTrinkets : Mod
 	{
-		///TODO: Include an items that modders may have the PDA/Cellphone as materials for
+		///TODO: Include any items that modders may have the PDA/Cellphone as materials for??
+		internal static GlobalTrinkets instance;
+		internal static GTConfigs Config;
+
+		internal readonly List<int> ValidItems = new List<int>() {
+			ItemID.DiscountCard, // discount
+			ItemID.GreedyRing,
+
+			ItemID.MechanicalLens, // tools
+			ItemID.WireKite,
+			ItemID.LaserRuler,
+			ItemID.ActuationAccessory,
+			ItemID.PaintSprayer,
+			ItemID.ArchitectGizmoPack,
+
+			ItemID.DontHurtComboBook, // critter & nature
+			ItemID.DontHurtCrittersBook,
+			ItemID.DontHurtCrittersBook,
+
+			ItemID.PDA, // PDA
+			ItemID.CellPhone,
+			ItemID.Shellphone,
+			ItemID.ShellphoneDummy,
+			ItemID.ShellphoneHell,
+			ItemID.ShellphoneOcean,
+			ItemID.ShellphoneSpawn,
+
+			ItemID.GPS, // PDA Components
+			ItemID.REK,
+			ItemID.GoblinTech,
+			ItemID.FishFinder,
+			ItemID.CopperWatch,
+			ItemID.TinWatch,
+			ItemID.SilverWatch,
+			ItemID.TungstenWatch,
+			ItemID.GoldWatch,
+			ItemID.PlatinumWatch,
+			ItemID.DepthMeter,
+			ItemID.Compass,
+			ItemID.Radar,
+			ItemID.LifeformAnalyzer,
+			ItemID.TallyCounter,
+			ItemID.MetalDetector,
+			ItemID.Stopwatch,
+			ItemID.DPSMeter,
+			ItemID.FishermansGuide,
+			ItemID.WeatherRadio,
+			ItemID.Sextant
+		};
 	}
 
 	public class ModdedPlayer : ModPlayer
 	{
-		/// <summary>
-		/// If true, either the PDA and Cellphone are the only items accepted OR a PDA or Cellphone was found. 
-		/// Either case, it is desired to skip the checks for other components.
-		/// </summary>
-		bool SkipPDAComponents = ModContent.GetInstance<GTConfigs>().PDAOnly;
+		readonly List<int> ContainsPDA = new List<int>() {
+			ItemID.PDA,
+			ItemID.CellPhone,
+			ItemID.Shellphone,
+			ItemID.ShellphoneDummy,
+			ItemID.ShellphoneHell,
+			ItemID.ShellphoneOcean,
+			ItemID.ShellphoneSpawn
+		};
 
-        public override void UpdateEquips()
-        {
+        public override void UpdateEquips() {
 			base.UpdateEquips();
 
-			Item[] PiggyBank = Player.bank.item;
-			Item[] Safe = Player.bank2.item;
-			Item[] Forge = Player.bank3.item;
-			Item[] Void = Player.bank4.item;
-			
-			for (int i = 0; i < PiggyBank.Length; i++) {
-				CheckTrinkets(PiggyBank[i].type);
-			}
-			for (int i = 0; i < Safe.Length; i++) {
-				CheckTrinkets(Safe[i].type);
-			}
-			for (int i = 0; i < Forge.Length; i++) {
-				CheckTrinkets(Forge[i].type);
-			}
-			for (int i = 0; i < Void.Length; i++)
-			{
-				CheckTrinkets(Void[i].type);
-			}
-			SkipPDAComponents = ModContent.GetInstance<GTConfigs>().PDAOnly; // Reset bool after checks
-		}
-
-		private void CheckTrinkets(int itemType)
-		{
-			GTConfigs config = ModContent.GetInstance<GTConfigs>();
-
 			// Discount Card
-			if (config.CheckForDiscount && (itemType == ItemID.DiscountCard || itemType == ItemID.GreedyRing)) {
-				Player.discount = true;
-				return;
-			}
+			if (GlobalTrinkets.Config.CheckForDiscount && (Player.HasItemInAnyInventory(ItemID.DiscountCard) || Player.HasItemInAnyInventory(ItemID.GreedyRing)))
+				Player.discountEquipped = true;
 
 			// Construction and Wiring
-			if (config.CheckForTools) {
-				if (itemType == ItemID.MechanicalLens || itemType == ItemID.WireKite) {
+			if (GlobalTrinkets.Config.CheckForTools) {
+				if (Player.HasItemInAnyInventory(ItemID.MechanicalLens) || Player.HasItemInAnyInventory(ItemID.WireKite))
 					Player.InfoAccMechShowWires = true;
-					return;
-				}/*
-				if (itemType == ItemID.Ruler || itemType == ItemID.WireKite) {
-					Player.rulerLine = true;
-					return;
-				}
-				*/
-				if (itemType == ItemID.LaserRuler) {
+
+				if (Player.HasItemInAnyInventory(ItemID.LaserRuler))
 					Player.rulerGrid = true;
-					return;
-				}
-				if (itemType == ItemID.ActuationAccessory) {
+
+				if (Player.HasItemInAnyInventory(ItemID.ActuationAccessory))
 					Player.autoActuator = true;
-					return;
-				}
-				if (itemType == ItemID.PaintSprayer || itemType == ItemID.ArchitectGizmoPack) {
+
+				if (Player.HasItemInAnyInventory(ItemID.PaintSprayer) || Player.HasItemInAnyInventory(ItemID.ArchitectGizmoPack))
 					Player.autoPaint = true;
-					return;
+			}
+
+			// Prevent critter/nature interactions
+			if (GlobalTrinkets.Config.CheckForCoexistence) {
+				if (Player.HasItemInAnyInventory(ItemID.DontHurtComboBook)) {
+					Player.dontHurtCritters = true;
+					Player.dontHurtNature = true;
+				}
+				else {
+					if (Player.HasItemInAnyInventory(ItemID.DontHurtCrittersBook))
+						Player.dontHurtCritters = true;
+
+					if (Player.HasItemInAnyInventory(ItemID.DontHurtCrittersBook))
+						Player.dontHurtCritters = true;
 				}
 			}
 
 			// Informational Accessories
-			if (!config.CheckForInfo) {
-				return;
+			if (GlobalTrinkets.Config.NoInfo)
+				return; // If disabled by the configs, do not support PDA type items
+
+			bool hasPDA = false;
+			foreach (int item in ContainsPDA) {
+				if (Player.HasItemInAnyInventory(item)) {
+					hasPDA = true;
+					break;
+				}
 			}
 
-			if (itemType == ItemID.PDA || itemType == ItemID.CellPhone) {
+			if (hasPDA) {
 				Player.accWatch = 3;
 				Player.accDepthMeter = 1;
 				Player.accCompass = 1;
@@ -95,98 +132,90 @@ namespace GlobalTrinkets
 				Player.accFishFinder = true;
 				Player.accWeatherRadio = true;
 				Player.accCalendar = true;
-				
-				SkipPDAComponents = true; // We found a PDA/Cellphone. No need to check for components in future checks.
-				return;
 			}
+			else {
+				bool checkAll = false;
 
-			// If a cellphone or PDA has been found, no need to check for each part
-			// If neither have been found yet and it remains false, the PDAOnly config must not be true, so check the components
-			if (!SkipPDAComponents) {
-				if (itemType == ItemID.GPS) {
+				if (Player.HasItemInAnyInventory(ItemID.GPS)) {
 					Player.accWatch = 3;
 					Player.accDepthMeter = 1;
 					Player.accCompass = 1;
-					return;
 				}
-				if (itemType == ItemID.REK) {
+				else {
+					checkAll = true;
+				}
+
+				if (Player.HasItemInAnyInventory(ItemID.REK)) {
 					Player.accThirdEye = true;
 					Player.accCritterGuide = true;
 					Player.accJarOfSouls = true;
-					return;
 				}
-				if (itemType == ItemID.GoblinTech) {
+				else {
+					checkAll = true;
+				}
+
+				if (Player.HasItemInAnyInventory(ItemID.GoblinTech)) {
 					Player.accOreFinder = true;
 					Player.accStopwatch = true;
 					Player.accDreamCatcher = true;
-					return;
 				}
-				if (itemType == ItemID.FishFinder) {
+				else {
+					checkAll = true;
+				}
+
+				if (Player.HasItemInAnyInventory(ItemID.FishFinder)) {
 					Player.accFishFinder = true;
 					Player.accWeatherRadio = true;
 					Player.accCalendar = true;
-					return;
+				}
+				else {
+					checkAll = true;
 				}
 
+
 				// Check each individual component if the config allows it
-				if (config.AllComponents) {
-					if (ModContent.GetInstance<GTConfigs>().AllComponents) {
-						if ((itemType == ItemID.CopperWatch || itemType == ItemID.TinWatch) && Player.accWatch < 1) {
-							Player.accWatch = 1;
-							return;
-						}
-						if ((itemType == ItemID.SilverWatch || itemType == ItemID.TungstenWatch) && Player.accWatch < 2) {
-							Player.accWatch = 2;
-							return;
-						}
-						if (itemType == ItemID.GoldWatch || itemType == ItemID.PlatinumWatch) {
-							Player.accWatch = 3;
-							return;
-						}
-						if (itemType == ItemID.DepthMeter) {
-							Player.accDepthMeter = 1;
-							return;
-						}
-						if (itemType == ItemID.Compass) {
-							Player.accCompass = 1;
-							return;
-						}
-						if (itemType == ItemID.Radar) {
-							Player.accThirdEye = true;
-							return;
-						}
-						if (itemType == ItemID.LifeformAnalyzer) {
-							Player.accCritterGuide = true;
-							return;
-						}
-						if (itemType == ItemID.TallyCounter) {
-							Player.accJarOfSouls = true;
-							return;
-						}
-						if (itemType == ItemID.MetalDetector) {
-							Player.accOreFinder = true;
-							return;
-						}
-						if (itemType == ItemID.Stopwatch) {
-							Player.accStopwatch = true;
-							return;
-						}
-						if (itemType == ItemID.DPSMeter) {
-							Player.accDreamCatcher = true;
-							return;
-						}
-						if (itemType == ItemID.FishermansGuide) {
-							Player.accFishFinder = true;
-							return;
-						}
-						if (itemType == ItemID.WeatherRadio) {
-							Player.accWeatherRadio = true;
-							return;
-						}
-						if (itemType == ItemID.Sextant) {
-							Player.accCalendar = true;
-							return;
-						}
+				if (checkAll || GlobalTrinkets.Config.AllComponents) {
+					if ((Player.HasItemInAnyInventory(ItemID.CopperWatch) || Player.HasItemInAnyInventory(ItemID.TinWatch) && Player.accWatch < 1)) {
+						Player.accWatch = 1;
+					}
+					if ((Player.HasItemInAnyInventory(ItemID.SilverWatch) || Player.HasItemInAnyInventory(ItemID.TungstenWatch) && Player.accWatch < 2)) {
+						Player.accWatch = 2;
+					}
+					if (Player.HasItemInAnyInventory(ItemID.GoldWatch) || Player.HasItemInAnyInventory(ItemID.PlatinumWatch)) {
+						Player.accWatch = 3;
+					}
+					if (Player.HasItemInAnyInventory(ItemID.DepthMeter)) {
+						Player.accDepthMeter = 1;
+					}
+					if (Player.HasItemInAnyInventory(ItemID.Compass)) {
+						Player.accCompass = 1;
+					}
+					if (Player.HasItemInAnyInventory(ItemID.Radar)) {
+						Player.accThirdEye = true;
+					}
+					if (Player.HasItemInAnyInventory(ItemID.LifeformAnalyzer)) {
+						Player.accCritterGuide = true;
+					}
+					if (Player.HasItemInAnyInventory(ItemID.TallyCounter)) {
+						Player.accJarOfSouls = true;
+					}
+					if (Player.HasItemInAnyInventory(ItemID.MetalDetector)) {
+						Player.accOreFinder = true;
+					}
+					if (Player.HasItemInAnyInventory(ItemID.Stopwatch)) {
+						Player.accStopwatch = true;
+					}
+					if (Player.HasItemInAnyInventory(ItemID.DPSMeter)) {
+						Player.accDreamCatcher = true;
+					}
+					if (Player.HasItemInAnyInventory(ItemID.FishermansGuide)) {
+						Player.accFishFinder = true;
+					}
+					if (Player.HasItemInAnyInventory(ItemID.WeatherRadio)) {
+						Player.accWeatherRadio = true;
+					}
+					if (Player.HasItemInAnyInventory(ItemID.Sextant)) {
+						Player.accCalendar = true;
 					}
 				}
 			}
