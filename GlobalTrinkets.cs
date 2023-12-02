@@ -60,7 +60,7 @@ namespace GlobalTrinkets
 
 	public class ModdedPlayer : ModPlayer
 	{
-		readonly List<int> ContainsPDA = [
+		readonly List<int> ContainsPDA = new List<int>() {
 			ItemID.PDA,
 			ItemID.CellPhone,
 			ItemID.Shellphone,
@@ -68,7 +68,7 @@ namespace GlobalTrinkets
 			ItemID.ShellphoneHell,
 			ItemID.ShellphoneOcean,
 			ItemID.ShellphoneSpawn
-		];
+		};
 
         public override void UpdateEquips() {
 			base.UpdateEquips();
