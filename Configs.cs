@@ -6,6 +6,7 @@ using Terraria.ModLoader.Config;
 
 namespace GlobalTrinkets
 {
+	/*
 	public class GTConfigs : ModConfig
     {
 		public override void OnLoaded() => GlobalTrinkets.Config = this;
@@ -138,4 +139,5 @@ namespace GlobalTrinkets
 			return false;
 		}
 	}
+	*/
 }
